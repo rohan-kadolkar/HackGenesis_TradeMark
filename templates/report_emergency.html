@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Report Emergency - Karnataka Biosecurity Network{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header text-white" style="background:#8f312b;">
+                    <h4 class="fw-bold mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Report Animal Health Emergency</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" id="emergencyForm">
+                        
+                        <!-- AI Vision Image Upload Section -->
+                        <div class="mb-4 p-3 bg-light rounded border border-warning">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="fas fa-camera text-danger me-2"></i>1. Upload Image (AI Auto-Fill Enabled)
+                            </label>
+                            <input type="file" name="images" id="imageInput" class="form-control" accept="image/*" multiple capture="environment">
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-magic text-primary me-1"></i>
+                                <strong>Smart Feature:</strong> Uploading photos will cause AI Vision to detect animal type, symptoms & auto-fill the questions below.
+                            </small>
+
+                            <!-- AI Status Container -->
+                            <div id="aiStatusContainer" class="mt-3" style="display: none;"></div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h5 class="fw-bold mb-3 text-secondary">2. Emergency Incident Details</h5>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold mb-0">Issue Title *</label>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-bold" onclick="startMicDictation('issueTitle')" title="Speak in Kannada/English">
+                                    <i class="fas fa-microphone text-danger me-1"></i>🎤 Speak
+                                </button>
+                            </div>
+                            <input type="text" name="title" id="issueTitle" class="form-control" placeholder="e.g., Sudden mortality in poultry flock" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Animal Type *</label>
+                                <select name="animal_type" id="animalType" class="form-select" required>
+                                    <option value="poultry">Poultry</option>
+                                    <option value="pig">Pig</option>
+                                    <option value="cattle">Cattle</option>
+                                    <option value="goat">Goat</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Affected Count *</label>
+                                <input type="number" name="affected_count" id="affectedCount" class="form-control" min="1" value="1" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Severity *</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="severity" id="low" value="low">
+                                <label class="btn btn-outline-success" for="low">Low</label>
+
+                                <input type="radio" class="btn-check" name="severity" id="medium" value="medium" checked>
+                                <label class="btn btn-outline-warning" for="medium">Medium</label>
+
+                                <input type="radio" class="btn-check" name="severity" id="high" value="high">
+                                <label class="btn btn-outline-danger" for="high">High</label>
+
+                                <input type="radio" class="btn-check" name="severity" id="critical" value="critical">
+                                <label class="btn btn-outline-dark" for="critical">Critical</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold mb-0">Symptoms Observed *</label>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-bold" onclick="startMicDictation('symptomsInput')" title="Speak in Kannada/English">
+                                    <i class="fas fa-microphone text-danger me-1"></i>🎤 Speak
+                                </button>
+                            </div>
+                            <textarea name="symptoms" id="symptomsInput" class="form-control" rows="2" placeholder="e.g., Fever, coughing, nasal discharge, reduced feed intake" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold mb-0">Description *</label>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-bold" onclick="startMicDictation('descriptionInput')" title="Speak in Kannada/English">
+                                    <i class="fas fa-microphone text-danger me-1"></i>🎤 Speak
+                                </button>
+                            </div>
+                            <textarea name="description" id="descriptionInput" class="form-control" rows="4" placeholder="Describe when it started, how many animals are affected, recent changes, and vaccination history..." required></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-robot me-2"></i><strong>AI Assistance:</strong> After submission, the app will generate immediate temporary treatment and isolation guidelines while a veterinarian is assigned.
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 btn-lg fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Emergency Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('imageInput');
+    if (!imageInput) return;
+
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const statusBox = document.getElementById('aiStatusContainer');
+        statusBox.style.display = 'block';
+        statusBox.innerHTML = `
+            <div class="alert alert-info d-flex align-items-center shadow-sm mb-0">
+                <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                <div><strong>AI Vision Analyzing Image...</strong> Detecting animal species, symptoms, and risk severity to autofill questions.</div>
+            </div>
+        `;
+
+        const currentLang = localStorage.getItem('kbnLanguage') || 'en';
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('language', currentLang);
+
+        fetch('/api/analyze-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && (data.analysis || data.gemma_output)) {
+                const a = data.analysis || {};
+                const g = data.gemma_output || {};
+
+                // 1. Issue Title
+                let titleVal = a.issue_title || a.title || g.possible_concern || "Livestock Health Incident";
+                if (currentLang === 'kn' && typeof translateTextString === 'function') titleVal = translateTextString(titleVal, 'kn');
+                const titleEl = document.getElementById('issueTitle');
+                if (titleEl) titleEl.value = titleVal;
+
+                // 2. Animal Type
+                const animalVal = a.animal_type || g.animal || "cattle";
+                const animalEl = document.getElementById('animalType');
+                if (animalEl) animalEl.value = animalVal;
+
+                // 3. Symptoms
+                let symptomsVal = a.symptoms || a.symptoms_observed || g.visible_abnormalities;
+                if (Array.isArray(symptomsVal)) symptomsVal = symptomsVal.join(', ');
+                if (!symptomsVal) symptomsVal = "Physical symptoms observed during visual inspection.";
+                if (currentLang === 'kn' && typeof translateTextString === 'function') symptomsVal = translateTextString(symptomsVal, 'kn');
+                const symptomsEl = document.getElementById('symptomsInput');
+                if (symptomsEl) symptomsEl.value = symptomsVal;
+
+                // 4. Description
+                let descVal = a.description || g.farmer_action || "Gemma AI Vision analyzed the photo and auto-filled observed findings.";
+                if (currentLang === 'kn' && typeof translateTextString === 'function') descVal = translateTextString(descVal, 'kn');
+                const descEl = document.getElementById('descriptionInput');
+                if (descEl) descEl.value = descVal;
+
+                // 5. Severity radio button
+                const sevVal = (a.severity || g.urgency || "medium").toLowerCase();
+                const rad = document.getElementById(sevVal);
+                if (rad) rad.checked = true;
+
+                // Visual highlight feedback on autofilled inputs
+                ['issueTitle', 'animalType', 'symptomsInput', 'descriptionInput'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.backgroundColor = '#e8f0fe';
+                        el.style.transition = 'background-color 0.5s ease';
+                        setTimeout(() => { el.style.backgroundColor = ''; }, 3000);
+                    }
+                });
+
+                statusBox.innerHTML = `
+                    <div class="alert alert-success shadow-sm mb-0">
+                        <i class="fas fa-magic me-2"></i>
+                        <strong>AI Vision Analysis Complete!</strong> Form questions (Title, Animal Type, Symptoms, Description & Severity) have been auto-filled. Please review before submitting.
+                    </div>
+                `;
+            } else {
+                statusBox.innerHTML = `
+                    <div class="alert alert-warning shadow-sm mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Could not auto-fill details from image. Please fill out the form manually.
+                    </div>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error("AI Analysis error:", err);
+            statusBox.innerHTML = `
+                <div class="alert alert-warning shadow-sm mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    AI Analysis request encountered an issue. Please complete the form manually.
+                </div>
+            `;
+        });
+    });
+});
+
+window.onLanguageChanged = function(lang) {
+    ['issueTitle', 'symptomsInput', 'descriptionInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value && el.value.trim()) {
+            if (lang === 'kn' && typeof translateTextString === 'function') {
+                el.value = translateTextString(el.value, 'kn');
+            }
+        }
+    });
+};
+
+function startMicDictation(targetId) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Speech Recognition is not supported in this browser. Please type manually.");
+        return;
+    }
+
+    const currentLang = localStorage.getItem('kbnLanguage') || 'en';
+    const recognition = new SpeechRecognition();
+    recognition.lang = currentLang === 'kn' ? 'kn-IN' : 'en-US';
+    recognition.interimResults = false;
+
+    el.placeholder = currentLang === 'kn' ? "ಆಲಿಸಲಾಗುತ್ತಿದೆ... ದಯವಿಟ್ಟು ಮಾತನಾಡಿ..." : "Listening... Please speak now...";
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        el.value = (el.value ? el.value + " " : "") + transcript;
+        if (currentLang === 'kn' && typeof translateTextString === 'function') {
+            el.value = translateTextString(el.value, 'kn');
+        }
+    };
+
+    recognition.onerror = function(event) {
+        console.warn("Speech recognition error:", event.error);
+    };
+}
+</script>
+{% endblock %}

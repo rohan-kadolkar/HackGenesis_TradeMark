@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Login - Karnataka Biosecurity Network{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="page-kicker">Secure access</div>
+                        <h2 class="fw-bold mb-0"><i class="fas fa-shield-virus text-success me-2"></i>Login</h2>
+                    </div>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Login</button>
+                    </form>
+                    <hr class="my-4">
+                    <p class="text-center mb-3">Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+                    <div class="p-3 bg-light rounded-2 border">
+                        <small class="text-muted d-block fw-bold mb-2"><i class="fas fa-key me-1"></i>Quick 1-Click Demo Login:</small>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="fillLogin('farmer_bengaluru_urban_1', 'farmer123')">
+                                <i class="fas fa-tractor me-1"></i>Farmer
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="fillLogin('vet_bengaluru_urban_1', 'vet123')">
+                                <i class="fas fa-user-md me-1"></i>Veterinarian
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark" onclick="fillLogin('district_bengaluru_urban', 'district123')">
+                                <i class="fas fa-building me-1"></i>District Head
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="fillLogin('karnataka_state', 'state123')">
+                                <i class="fas fa-landmark me-1"></i>State Head
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillLogin(username, password) {
+    document.querySelector('input[name="username"]').value = username;
+    document.querySelector('input[name="password"]').value = password;
+    document.querySelector('form').submit();
+}
+</script>
+{% endblock %}

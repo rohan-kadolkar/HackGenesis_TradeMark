@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% block title %}Incident #{{ incident.id }} - Detailed Incident Report{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="page-kicker text-muted small fw-bold text-uppercase"><i class="fas fa-microscope me-1"></i>Detailed Incident Report</div>
+            <h3 class="fw-bold mb-0">Case #{{ incident.id }}: {{ incident.title }}</h3>
+        </div>
+        <div>
+            {% if incident.vet_verified is sameas true %}
+                <span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-check-circle me-1"></i>Report Verified</span>
+            {% elif incident.vet_verified is sameas false %}
+                <span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-times-circle me-1"></i>Report Rejected</span>
+            {% else %}
+                <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fas fa-clock me-1"></i>Status: Pending Verification</span>
+            {% endif %}
+            <a href="{{ url_for('vet_dashboard') if current_user.role == 'vet' else url_for('farmer_dashboard') }}" class="btn btn-outline-secondary btn-sm ms-2">
+                <i class="fas fa-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    </div>
+
+    {% set rag = incident.get_rag_data() or {} %}
+    {% set farmer_resp = rag.get('farmer_response', {}) %}
+    {% set vet_sum = rag.get('vet_summary', {}) %}
+    {% set retrieved_docs = rag.get('retrieved_context', []) %}
+    {% set gemma_out = rag.get('gemma_output') or rag.get('gemma_raw') or rag.get('incident', {}) %}
+
+    <div class="row">
+        <div class="col-lg-12">
+
+            <!-- SECTION 1: Farmer Report -->
+            <div class="card mb-4 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-user-edit me-2"></i>SECTION 1: Farmer Report</h5>
+                    <span class="badge bg-light text-primary fw-bold">Incident Information</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h6 class="fw-bold text-secondary mb-2">Uploaded Image</h6>
+                            {% if incident.get_images_list() %}
+                            <img src="{{ url_for('uploaded_file', filename=incident.get_images_list()[0]) }}" class="img-fluid rounded border shadow-sm style-img" style="max-height: 220px; object-fit: cover; cursor: pointer;" onclick="window.open(this.src)">
+                            {% else %}
+                            <div class="bg-light p-4 rounded border text-muted">
+                                <i class="fas fa-image fa-3x mb-2"></i>
+                                <p class="mb-0 small">No image uploaded</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Animal Type:</strong> <span class="badge bg-secondary text-uppercase">{{ incident.animal_type }}</span></p>
+                                    <p class="mb-1"><strong>Issue Title:</strong> <span class="fw-bold">{{ incident.title }}</span></p>
+                                    <p class="mb-1"><strong>Severity:</strong> 
+                                        <span class="badge bg-{{ 'success' if incident.severity == 'low' else 'warning' if incident.severity == 'medium' else 'danger' if incident.severity == 'high' else 'dark' }}">
+                                            {{ incident.severity.upper() }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Location:</strong> {{ incident.village }}, {{ incident.taluka }}</p>
+                                    <p class="mb-1"><strong>District:</strong> {{ incident.district.name if incident.district else 'N/A' }}</p>
+                                    <p class="mb-1"><strong>Time Reported:</strong> {{ incident.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+                                </div>
+                                <div class="col-12">
+                                    <p class="mb-1"><strong>Symptoms:</strong></p>
+                                    <div class="bg-light p-2 rounded border small text-dark mb-2">{{ incident.symptoms }}</div>
+                                    <p class="mb-1"><strong>Description:</strong></p>
+                                    <div class="bg-light p-2 rounded border small text-dark">{{ incident.description }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Gemma Visual Analysis -->
+            <div class="card mb-4 shadow-sm border-info">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-camera-retro me-2"></i>SECTION 2: Gemma Visual Analysis</h5>
+                    <span class="badge bg-light text-info fw-bold">Structured Vision Output</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block">Animal Species Detected</span>
+                                <strong class="text-uppercase text-primary">{{ gemma_out.get('animal') or incident.animal_type }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block">Urgency Level</span>
+                                <span class="badge bg-{{ 'danger' if (gemma_out.get('urgency') or incident.severity) in ['high', 'critical'] else 'warning' }}">
+                                    {{ (gemma_out.get('urgency') or incident.severity)|upper }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block">Requires Vet Review</span>
+                                <span class="badge bg-success">TRUE</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block fw-bold mb-1">Visible Abnormalities & Features Observed:</span>
+                                <div>{{ gemma_out.get('visible_abnormalities') or incident.symptoms }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block fw-bold mb-1">Farmer Action Recommended:</span>
+                                <div>{{ gemma_out.get('farmer_action') or incident.description }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-secondary mb-2 small"><i class="fas fa-code me-1"></i>Raw Gemma Vision JSON:</h6>
+                    <pre class="bg-light p-3 border rounded font-monospace small mb-0">{{ gemma_out | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Agentic RAG Findings -->
+            <div class="card mb-4 shadow-sm border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-brain me-2"></i>SECTION 3: Agentic RAG Findings</h5>
+                    <span class="badge bg-light text-success fw-bold">Semantic Knowledge Synthesis</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 p-3 bg-light rounded border">
+                        <h6 class="fw-bold text-success"><i class="fas fa-exclamation-triangle me-2"></i>Possible Concern</h6>
+                        <p class="mb-0">{{ vet_sum.get('possible_concern') or 'Requires clinical inspection by visiting veterinarian.' }}</p>
+                    </div>
+
+                    <!-- Retrieved Reference Documents -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-secondary mb-2"><i class="fas fa-book-medical me-2"></i>Retrieved Reference Documents (Source Cited)</h6>
+                        {% if retrieved_docs %}
+                        <div class="accordion" id="ragDocsAccordion">
+                            {% for doc in retrieved_docs %}
+                            <div class="accordion-item border mb-2 rounded">
+                                <h2 class="accordion-header" id="headingDoc{{ loop.index }}">
+                                    <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDoc{{ loop.index }}">
+                                        <span class="badge bg-secondary me-2">{{ doc.source }}</span>
+                                        <strong class="me-auto">{{ doc.title }}</strong>
+                                        <span class="badge bg-success ms-2">Confidence: {{ (doc.confidence * 100)|round|int }}%</span>
+                                    </button>
+                                </h2>
+                                <div id="collapseDoc{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#ragDocsAccordion">
+                                    <div class="accordion-body small bg-light">
+                                        <pre style="white-space: pre-wrap; font-family: inherit;">{{ doc.content }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted small">No reference documents retrieved.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <h6 class="fw-bold text-warning"><i class="fas fa-shield-alt me-2"></i>Immediate Precautions</h6>
+                                <p class="small mb-0">{{ vet_sum.get('immediate_precautions') or 'Isolate animal and restrict handler movement.' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <h6 class="fw-bold text-danger"><i class="fas fa-door-closed me-2"></i>Isolation Recommendations</h6>
+                                <p class="small mb-0">{{ vet_sum.get('isolation_recommendation') or 'Isolate at least 100 meters away from healthy livestock.' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <h6 class="fw-bold text-info"><i class="fas fa-user-shield me-2"></i>Farmer Advisory</h6>
+                                <ul class="small mb-0 ps-3">
+                                    {% for rec in farmer_resp.get('recommended', []) %}
+                                    <li>{{ rec }}</li>
+                                    {% else %}
+                                    <li>Separate sick animal immediately.</li>
+                                    <li>Provide soft feed and clean water.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <h6 class="fw-bold text-primary"><i class="fas fa-stethoscope me-2"></i>Veterinary Advisory</h6>
+                                <p class="small mb-0">{{ vet_sum.get('vet_advisory') or 'Clinical evaluation and diagnostic sample collection advised.' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-end">
+                        <span class="badge bg-secondary">RAG System Confidence Level: {{ ((rag.get('incident', {}).get('confidence', 0.88)) * 100)|round|int }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: AI Recommendation -->
+            <div class="card mb-4 shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-robot me-2"></i>SECTION 4: AI Decision Support Recommendation</h5>
+                    <span class="badge bg-dark text-white fw-bold">Rule-Based Decision Guidance</span>
+                </div>
+                <div class="card-body">
+                    {% set sev = incident.severity.lower() %}
+                    {% if sev == 'low' %}
+                    <div class="alert alert-success d-flex align-items-center mb-0">
+                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Recommended Action:</h6>
+                            <p class="mb-1"><strong>✓ Veterinary visit not immediately required. Continue monitoring.</strong></p>
+                            <small class="text-muted">Reason: Low risk severity detected. Standard farmer biosecurity measures apply.</small>
+                        </div>
+                    </div>
+                    {% elif sev == 'medium' %}
+                    <div class="alert alert-warning d-flex align-items-center mb-0">
+                        <i class="fas fa-exclamation-circle fa-2x me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Recommended Action:</h6>
+                            <p class="mb-1"><strong>✓ Veterinary review recommended within 24 hours.</strong></p>
+                            <small class="text-muted">Reason: Moderate symptoms and guidance indicate veterinary review is necessary.</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger d-flex align-items-center mb-0">
+                        <i class="fas fa-bell fa-2x me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Recommended Action:</h6>
+                            <p class="mb-1"><strong>✓ Immediate veterinary visit recommended, escalate to district authority after verification.</strong></p>
+                            <small class="text-muted">Reason: High severity / contagious risk signs detected. Requires emergency containment.</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if current_user.role == 'vet' %}
+            <!-- SECTION 5: Veterinarian Verification -->
+            <div class="card mb-4 shadow-sm border-dark">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-user-check me-2"></i>SECTION 5: Veterinarian Verification & Corrections</h5>
+                    <span class="badge bg-light text-dark fw-bold">Interactive Review Panel</span>
+                </div>
+                <div class="card-body">
+                    <form id="vetVerificationForm">
+                        <h6 class="fw-bold mb-2 text-primary"><i class="fas fa-poll me-1"></i>AI Assessment Accuracy Check</h6>
+                        <div class="mb-3 bg-light p-3 border rounded">
+                            <label class="form-label d-block fw-bold small">Is the AI assessment correct?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="ai_assessment_rating" id="aiCorrect" value="correct" checked>
+                                <label class="form-check-label" for="aiCorrect">( ) Yes, AI assessment is correct</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="ai_assessment_rating" id="aiPartial" value="partially_correct">
+                                <label class="form-check-label" for="aiPartial">( ) Partially correct</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="ai_assessment_rating" id="aiIncorrect" value="incorrect">
+                                <label class="form-check-label" for="aiIncorrect">( ) Incorrect</label>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-2 text-primary"><i class="fas fa-edit me-1"></i>Editable Fields for Veterinarian Corrections</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Issue Title</label>
+                                <input type="text" id="editTitle" class="form-control" value="{{ incident.title }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Severity Level</label>
+                                <select id="editSeverity" class="form-select">
+                                    <option value="low" {% if incident.severity == 'low' %}selected{% endif %}>Low (Visit not immediately required)</option>
+                                    <option value="medium" {% if incident.severity == 'medium' %}selected{% endif %}>Medium (Review within 24h)</option>
+                                    <option value="high" {% if incident.severity == 'high' %}selected{% endif %}>High (Immediate visit & Escalate)</option>
+                                    <option value="critical" {% if incident.severity == 'critical' %}selected{% endif %}>Critical (Emergency Containment)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">Symptoms Observed</label>
+                                <input type="text" id="editSymptoms" class="form-control" value="{{ incident.symptoms }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Diagnosis (Optional / Clinical Finding)</label>
+                                <input type="text" id="editDiagnosis" class="form-control" placeholder="e.g., Clinical FMD suspect confirmed by mouth lesions">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Recommended Action for Farmer</label>
+                                <input type="text" id="editAction" class="form-control" placeholder="e.g., Maintain 100m isolation; apply potassium permanganate wash">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Veterinary Notes & Inspection Comments</label>
+                                <textarea id="editNotes" class="form-control" rows="3" placeholder="Enter formal diagnosis, prescribed treatment, and official inspection notes...">{{ incident.vet_notes or '' }}</textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SECTION 6: Final Decision -->
+            <div class="card mb-4 shadow-sm border-secondary">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-gavel me-2"></i>SECTION 6: Final Decision & Verification Actions</h5>
+                    <span class="badge bg-light text-dark fw-bold">Veterinarian Authorization</span>
+                </div>
+                <div class="card-body text-center py-4">
+                    <p class="text-muted small mb-3">The AI provides decision support; the veterinarian is the final authority. Click an action button below to finalize this report.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-success btn-lg px-4 fw-bold" onclick="submitFinalDecision('verify')">
+                            <i class="fas fa-check-circle me-2"></i>Verify Report
+                        </button>
+                        <button class="btn btn-danger btn-lg px-4 fw-bold" onclick="submitFinalDecision('reject')">
+                            <i class="fas fa-times-circle me-2"></i>Reject Report
+                        </button>
+                        <button class="btn btn-warning btn-lg px-4 fw-bold text-dark" onclick="submitFinalDecision('save_changes')">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+
+                    <div id="finalDecisionStatus" class="mt-3 alert py-2 small" style="display:none;"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Audit Trail (If Verified or Corrected) -->
+            {% set correction = incident.get_vet_correction_data() %}
+            {% if correction %}
+            <div class="card border-warning mb-4 shadow-sm">
+                <div class="card-header bg-warning text-dark fw-bold">
+                    <i class="fas fa-history me-2"></i>Audit Trail: Stored Veterinarian Verification & Corrections Record
+                </div>
+                <div class="card-body bg-light">
+                    <p class="small text-muted mb-2">Verified at: {{ correction.verified_at }} | Reviewed by: Dr. {{ current_user.username }}</p>
+                    <h6 class="fw-bold">Original AI Assessment vs Veterinarian Correction:</h6>
+                    <pre class="bg-white p-3 border rounded small mb-0">{{ correction | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+function submitFinalDecision(action) {
+    const statusBox = document.getElementById('finalDecisionStatus');
+    statusBox.style.display = 'block';
+    statusBox.className = 'mt-3 alert alert-info py-2 small';
+    statusBox.innerText = 'Processing final decision...';
+
+    const aiRating = document.querySelector('input[name="ai_assessment_rating"]:checked')?.value || 'correct';
+    
+    const payload = {
+        incident_id: {{ incident.id }},
+        action: action,
+        ai_assessment_rating: aiRating,
+        vet_notes: document.getElementById('editNotes')?.value || '',
+        edited_fields: {
+            title: document.getElementById('editTitle')?.value,
+            severity: document.getElementById('editSeverity')?.value,
+            symptoms: document.getElementById('editSymptoms')?.value,
+            diagnosis: document.getElementById('editDiagnosis')?.value,
+            recommended_action: document.getElementById('editAction')?.value
+        }
+    };
+
+    fetch('/api/vet/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            statusBox.className = 'mt-3 alert alert-success py-2 small';
+            statusBox.innerText = data.message || 'Verification complete!';
+            setTimeout(() => { location.reload(); }, 1200);
+        } else {
+            statusBox.className = 'mt-3 alert alert-danger py-2 small';
+            statusBox.innerText = data.error || 'Action failed.';
+        }
+    })
+    .catch(err => {
+        statusBox.className = 'mt-3 alert alert-danger py-2 small';
+        statusBox.innerText = 'Server error occurred during verification.';
+    });
+}
+</script>
+{% endblock %}
