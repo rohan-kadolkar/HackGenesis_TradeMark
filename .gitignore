@@ -1,0 +1,27 @@
+# Environment variables
+.env
+*.env
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Database
+instance/
+*.db
+*.sqlite3
+
+# IDE & Editor
+.vscode/
+.idea/
+
+# Static Uploads (except structure)
+static/uploads/*
+!static/uploads/.gitkeep
