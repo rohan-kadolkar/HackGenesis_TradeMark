@@ -8,8 +8,8 @@
         <h1 class="display-5 fw-bold mb-3">Protecting Karnataka's Livestock</h1>
         <p class="lead mb-4 mx-auto" style="max-width: 720px;">Community-driven biosecurity network connecting farmers, veterinarians, and officials for rapid disease response</p>
         <div class="d-flex flex-wrap justify-content-center gap-3">
-            <a href="{{ url_for('signup') }}" class="btn btn-light btn-lg px-4">Join Network</a>
-            <a href="{{ url_for('about') }}" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn btn-light btn-lg px-4">Join Network</a>
+            <a href="{{ url_for('auth.about') }}" class="btn btn-outline-light btn-lg px-4">Learn More</a>
         </div>
     </div>
 </section>
@@ -107,7 +107,7 @@
     <div class="container text-center">
         <h2 class="fw-bold mb-3">Ready to Secure Your Farm?</h2>
         <p class="lead text-muted mb-4">Join thousands of Karnataka farmers in building a disease-resilient livestock sector</p>
-        <a href="{{ url_for('signup') }}" class="btn btn-success btn-lg px-5">Register Now</a>
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-success btn-lg px-5">Register Now</a>
     </div>
 </section>
 {% endblock %}

@@ -216,6 +216,7 @@ def state_dashboard_endpoint():
 
 
 @api_bp.route('/voice/stt', methods=['POST'])
+@login_required
 def voice_stt_endpoint():
     """
     POST /api/voice/stt
@@ -239,6 +240,7 @@ def voice_stt_endpoint():
 
 
 @api_bp.route('/voice/tts', methods=['POST'])
+@login_required
 def voice_tts_endpoint():
     """
     POST /api/voice/tts
@@ -256,6 +258,7 @@ def voice_tts_endpoint():
 
 
 @api_bp.route('/translate', methods=['POST'])
+@login_required
 def translate_endpoint():
     """
     POST /api/translate
@@ -268,3 +271,47 @@ def translate_endpoint():
 
     translated = ai_service.translate_text_to_kannada(text)
     return jsonify({'translated': translated, 'success': True})
+
+
+@api_bp.route('/district/<int:district_id>/stats')
+@login_required
+def district_stats_api(district_id):
+    from models import District, FarmerProfile, Incident, get_ist
+    from datetime import timedelta
+    import random
+
+    district = District.query.get(district_id)
+    if not district:
+        return jsonify({'error': 'District not found'}), 404
+
+    # Monthly incident trend (mock data for last 6 months)
+    months = []
+    for i in range(5, -1, -1):
+        month_date = get_ist() - timedelta(days=30*i)
+        months.append(month_date.strftime('%b'))
+
+    # Mock trend data based on district risk
+    base_cases = 5 if district.risk_level == 'green' else (10 if district.risk_level == 'yellow' else 18)
+    incident_trend = [base_cases + random.randint(-3, 5) for _ in range(6)]
+    incident_trend = [max(0, x) for x in incident_trend]
+
+    return jsonify({
+        'months': months,
+        'incidents': incident_trend,
+        'vaccination_coverage': district.vaccination_coverage,
+        'total_farms': FarmerProfile.query.filter_by(district_id=district_id).count(),
+        'active_cases': Incident.query.filter(
+            Incident.district_id == district_id,
+            Incident.status.in_(['pending', 'assigned', 'in_progress'])
+        ).count()
+    })
+
+
+@api_bp.route('/mark-messages-read', methods=['POST'])
+@login_required
+def mark_messages_read():
+    from models import Message
+    Message.query.filter_by(recipient_id=current_user.id).update({'is_read': True})
+    from models import db
+    db.session.commit()
+    return jsonify({'status': 'success'})

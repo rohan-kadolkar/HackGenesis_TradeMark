@@ -9,8 +9,8 @@
                 <h5 class="fw-bold text-success"><i class="fas fa-tractor me-2"></i>Farmer Panel</h5>
                 <hr>
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="{{ url_for('farmer_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a>
-                    <a class="nav-link" href="{{ url_for('report_emergency') }}"><i class="fas fa-exclamation-circle me-2"></i>Report Emergency</a>
+                    <a class="nav-link active" href="{{ url_for('farmer.farmer_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a>
+                    <a class="nav-link" href="{{ url_for('farmer.report_emergency') }}"><i class="fas fa-exclamation-circle me-2"></i>Report Emergency</a>
                     <a class="nav-link" href="#biosecurity"><i class="fas fa-shield-alt me-2"></i>Biosecurity Tips</a>
                     <a class="nav-link" href="#vaccinations"><i class="fas fa-syringe me-2"></i>Vaccination Records</a>
                     <a class="nav-link" href="#messages"><i class="fas fa-envelope me-2"></i>Messages</a>
@@ -26,7 +26,7 @@
                     <h3 class="fw-bold">Welcome, {{ current_user.username }}!</h3>
                     <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i>{{ profile.farm_name }} | {{ profile.village }}, {{ profile.taluka }}, {{ profile.district.name }}</p>
                 </div>
-                <a href="{{ url_for('report_emergency') }}" class="btn btn-danger btn-lg emergency-btn">
+                <a href="{{ url_for('farmer.report_emergency') }}" class="btn btn-danger btn-lg emergency-btn">
                     <i class="fas fa-plus-circle me-2"></i>Report Emergency
                 </a>
             </div>
@@ -85,7 +85,7 @@
                     <div class="card">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold mb-0"><i class="fas fa-history me-2"></i>Recent Incidents</h5>
-                            <a href="{{ url_for('report_emergency') }}" class="btn btn-sm btn-success">+ New</a>
+                            <a href="{{ url_for('farmer.report_emergency') }}" class="btn btn-sm btn-success">+ New</a>
                         </div>
                         <div class="card-body">
                             {% if incidents %}
@@ -99,7 +99,7 @@
                                             <span class="badge bg-secondary">{{ incident.animal_type.title() }}</span>
                                             <small class="text-muted ms-2">{{ incident.created_at.strftime('%d %b %Y') }}</small>
                                         </div>
-                                        <a href="{{ url_for('view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="{{ url_for('farmer.view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-primary">View</a>
                                     </div>
                                 </div>
                                 {% endfor %}

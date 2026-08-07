@@ -17,7 +17,7 @@
             {% else %}
                 <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fas fa-clock me-1"></i>Status: Pending Verification</span>
             {% endif %}
-            <a href="{{ url_for('vet_dashboard') if current_user.role == 'vet' else url_for('farmer_dashboard') }}" class="btn btn-outline-secondary btn-sm ms-2">
+            <a href="{{ url_for('vet.vet_dashboard') if current_user.role == 'vet' else url_for('farmer.farmer_dashboard') }}" class="btn btn-outline-secondary btn-sm ms-2">
                 <i class="fas fa-arrow-left me-1"></i>Back
             </a>
         </div>
@@ -43,7 +43,7 @@
                         <div class="col-md-4 text-center">
                             <h6 class="fw-bold text-secondary mb-2">Uploaded Image</h6>
                             {% if incident.get_images_list() %}
-                            <img src="{{ url_for('uploaded_file', filename=incident.get_images_list()[0]) }}" class="img-fluid rounded border shadow-sm style-img" style="max-height: 220px; object-fit: cover; cursor: pointer;" onclick="window.open(this.src)">
+                            <img src="{{ url_for('farmer.uploaded_file', filename=incident.get_images_list()[0]) }}" class="img-fluid rounded border shadow-sm style-img" style="max-height: 220px; object-fit: cover; cursor: pointer;" onclick="window.open(this.src)">
                             {% else %}
                             <div class="bg-light p-4 rounded border text-muted">
                                 <i class="fas fa-image fa-3x mb-2"></i>
@@ -110,13 +110,13 @@
                         <div class="col-12">
                             <div class="p-3 bg-light rounded border">
                                 <span class="text-muted small d-block fw-bold mb-1">Visible Abnormalities & Features Observed:</span>
-                                <div>{{ gemma_out.get('visible_abnormalities') or incident.symptoms }}</div>
+                                <div class="markdown-content">{{ gemma_out.get('visible_abnormalities') or incident.symptoms }}</div>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="p-3 bg-light rounded border">
                                 <span class="text-muted small d-block fw-bold mb-1">Farmer Action Recommended:</span>
-                                <div>{{ gemma_out.get('farmer_action') or incident.description }}</div>
+                                <div class="markdown-content">{{ gemma_out.get('farmer_action') or incident.description }}</div>
                             </div>
                         </div>
                     </div>
@@ -135,7 +135,7 @@
                 <div class="card-body">
                     <div class="mb-3 p-3 bg-light rounded border">
                         <h6 class="fw-bold text-success"><i class="fas fa-exclamation-triangle me-2"></i>Possible Concern</h6>
-                        <p class="mb-0">{{ vet_sum.get('possible_concern') or 'Requires clinical inspection by visiting veterinarian.' }}</p>
+                        <div class="markdown-content mb-0">{{ vet_sum.get('possible_concern') or 'Requires clinical inspection by visiting veterinarian.' }}</div>
                     </div>
 
                     <!-- Retrieved Reference Documents -->
@@ -169,13 +169,13 @@
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded border h-100">
                                 <h6 class="fw-bold text-warning"><i class="fas fa-shield-alt me-2"></i>Immediate Precautions</h6>
-                                <p class="small mb-0">{{ vet_sum.get('immediate_precautions') or 'Isolate animal and restrict handler movement.' }}</p>
+                                <div class="markdown-content small mb-0">{{ vet_sum.get('immediate_precautions') or 'Isolate animal and restrict handler movement.' }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded border h-100">
                                 <h6 class="fw-bold text-danger"><i class="fas fa-door-closed me-2"></i>Isolation Recommendations</h6>
-                                <p class="small mb-0">{{ vet_sum.get('isolation_recommendation') or 'Isolate at least 100 meters away from healthy livestock.' }}</p>
+                                <div class="markdown-content small mb-0">{{ vet_sum.get('isolation_recommendation') or 'Isolate at least 100 meters away from healthy livestock.' }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -194,7 +194,7 @@
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded border h-100">
                                 <h6 class="fw-bold text-primary"><i class="fas fa-stethoscope me-2"></i>Veterinary Advisory</h6>
-                                <p class="small mb-0">{{ vet_sum.get('vet_advisory') or 'Clinical evaluation and diagnostic sample collection advised.' }}</p>
+                                <div class="markdown-content small mb-0">{{ vet_sum.get('vet_advisory') or 'Clinical evaluation and diagnostic sample collection advised.' }}</div>
                             </div>
                         </div>
                     </div>
@@ -393,6 +393,18 @@ function submitFinalDecision(action) {
         statusBox.className = 'mt-3 alert alert-danger py-2 small';
         statusBox.innerText = 'Server error occurred during verification.';
     });
-}
+</script>
+
+<!-- Markdown Parser for AI Output -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const mdElements = document.querySelectorAll('.markdown-content');
+    mdElements.forEach(el => {
+      if (el.textContent) {
+         el.innerHTML = marked.parse(el.textContent);
+      }
+    });
+  });
 </script>
 {% endblock %}

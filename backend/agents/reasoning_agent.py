@@ -48,7 +48,7 @@ GOVERNMENT REPORTING RECOMMENDATION: <reporting timeline/SOP requirements from c
         reasoning_text = None
 
         if gemma_key and not gemma_key.startswith('nvapi-'):
-            for model_name in ['gemma-4-31b-it', 'gemma-4-26b-a4b-it']:
+            for model_name in ['gemini-3.5-flash', 'gemini-2.5-flash']:
                 try:
                     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemma_key}"
                     res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=35)

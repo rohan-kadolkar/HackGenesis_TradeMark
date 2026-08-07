@@ -33,6 +33,10 @@ class IncidentService:
         db.session.add(incident)
         db.session.commit()
 
+        # Get user_id from farmer profile for message sender
+        farmer_profile_obj = FarmerProfile.query.get(farmer_id)
+        farmer_user_id = farmer_profile_obj.user_id if farmer_profile_obj else farmer_id
+
         # Check automated outbreak trigger for District
         if severity in ['medium', 'high', 'critical'] and district_id:
             district = District.query.get(district_id)
@@ -48,7 +52,7 @@ class IncidentService:
         for vet in vets:
             if vet.user:
                 vet_msg = Message(
-                    sender_id=farmer_id,
+                    sender_id=farmer_user_id,
                     recipient_id=vet.user.id,
                     recipient_role='vet',
                     district_id=district_id,
@@ -142,6 +146,7 @@ class IncidentService:
                     content=f"Dr. {vet_username} verified a High Severity {incident.animal_type.title()} incident (#{incident.id}: {incident.title}) in {incident.village}, {incident.taluka}. Immediate biosecurity containment and 3 km surveillance zone recommended.",
                     message_type='emergency'
                 )
+                db.session.add(alert_msg)
         # 2. Notify Farmer, District Head, and State Head via NotificationService (Real-Time + DB)
         try:
             from backend.services.notification_service import NotificationService

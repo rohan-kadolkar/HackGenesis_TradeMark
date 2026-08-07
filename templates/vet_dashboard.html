@@ -9,7 +9,7 @@
                 <h5 class="fw-bold text-primary"><i class="fas fa-user-md me-2"></i>Vet Panel</h5>
                 <hr>
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="{{ url_for('vet_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a>
+                    <a class="nav-link active" href="{{ url_for('vet.vet_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a>
                     <a class="nav-link" href="#pending"><i class="fas fa-clipboard-list me-2"></i>Pending Cases</a>
                     <a class="nav-link" href="#assigned"><i class="fas fa-tasks me-2"></i>My Cases</a>
                     <a class="nav-link" href="#schedule"><i class="fas fa-calendar-alt me-2"></i>Schedule</a>
@@ -93,7 +93,7 @@
                                     <div class="row align-items-center">
                                         <div class="col-md-3 text-center">
                                             {% if incident.get_images_list() %}
-                                            <img src="{{ url_for('uploaded_file', filename=incident.get_images_list()[0]) }}" class="img-fluid rounded border mb-2" style="max-height: 80px; object-fit: cover;">
+                                            <img src="{{ url_for('farmer.uploaded_file', filename=incident.get_images_list()[0]) }}" class="img-fluid rounded border mb-2" style="max-height: 80px; object-fit: cover;">
                                             {% else %}
                                             <div class="bg-light rounded p-2 text-muted border mb-2 small"><i class="fas fa-paw fa-2x"></i></div>
                                             {% endif %}
@@ -113,7 +113,7 @@
                                             </p>
                                             <p class="mb-2 small text-muted"><strong>Time Reported:</strong> {{ incident.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
 
-                                            <a href="{{ url_for('view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-primary w-100 fw-bold">
+                                            <a href="{{ url_for('farmer.view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-primary w-100 fw-bold">
                                                 <i class="fas fa-file-medical me-1"></i>View Report
                                             </a>
                                         </div>
@@ -144,7 +144,7 @@
                                             <small class="text-muted">{{ incident.created_at.strftime('%d %b') }}</small>
                                         </div>
                                         <div>
-                                            <a href="{{ url_for('view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                            <a href="{{ url_for('farmer.view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-primary">View</a>
                                             {% if incident.status != 'resolved' %}
                                             <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#scheduleModal{{ incident.id }}">Schedule</button>
                                             {% endif %}
@@ -160,7 +160,7 @@
                                             <h5 class="modal-title">Schedule Visit</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
-                                        <form method="POST" action="{{ url_for('create_schedule') }}">
+                                        <form method="POST" action="{{ url_for('vet.create_schedule') }}">
                                             <div class="modal-body">
                                                 <input type="hidden" name="incident_id" value="{{ incident.id }}">
                                                 <div class="mb-3">
@@ -266,7 +266,7 @@
                                     </div>
                                 </div>
                                 <div class="btn-group">
-                                    <form method="POST" action="{{ url_for('verify_biosecurity', farmer_profile_id=farmer.id) }}" class="d-inline">
+                                    <form method="POST" action="{{ url_for('vet.verify_biosecurity', farmer_profile_id=farmer.id) }}" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-{{ 'outline-danger' if farmer.is_biosecure else 'outline-success' }}" title="{{ 'Revoke Verification' if farmer.is_biosecure else 'Verify Farm' }}">
                                             <i class="fas fa-shield-alt"></i>
                                         </button>
@@ -284,7 +284,7 @@
                                             <h5 class="modal-title">Message to {{ farmer.user.username }}</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
-                                        <form method="POST" action="{{ url_for('vet_send_message') }}">
+                                        <form method="POST" action="{{ url_for('vet.vet_send_message') }}">
                                             <div class="modal-body">
                                                 <input type="hidden" name="farmer_id" value="{{ farmer.user_id }}">
                                                 <textarea name="content" class="form-control" rows="3" placeholder="Type your message..." required></textarea>

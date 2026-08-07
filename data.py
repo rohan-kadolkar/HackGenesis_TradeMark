@@ -393,7 +393,8 @@ def seed_database():
         farmer = random.choice(farmers)
         district = districts.get(farmer.district.name)
         status = random.choice(incident_statuses)
-        vet = random.choice([v for v in vets if v.district_id == district.id]) if status != "pending" else None
+        matching_vets = [v for v in vets if v.district_id == district.id]
+        vet = random.choice(matching_vets) if status != "pending" and matching_vets else None
 
         incident = Incident(
             farmer_id=farmer.id,

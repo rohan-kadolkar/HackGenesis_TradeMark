@@ -183,6 +183,9 @@ class NotificationService:
     def mark_read(notification_id, user_id=None):
         notif = Notification.query.get(notification_id)
         if notif:
+            # Verify the notification belongs to the requesting user
+            if user_id and notif.recipient_id and notif.recipient_id != user_id:
+                return None
             notif.is_read = True
             db.session.commit()
             return notif

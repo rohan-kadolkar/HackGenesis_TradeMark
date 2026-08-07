@@ -118,7 +118,7 @@
 <body>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+            <a class="navbar-brand" href="{{ url_for('auth.index') }}">
                 <i class="fas fa-shield-virus me-2"></i>
                 <span class="d-none d-md-inline">Karnataka Biosecurity Network</span>
                 <span class="d-md-none">KBN</span>
@@ -128,22 +128,22 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.index') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.about') }}">About</a></li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% if current_user.role == 'farmer' %}{{ url_for('farmer_dashboard') }}{% elif current_user.role == 'vet' %}{{ url_for('vet_dashboard') }}{% elif current_user.role == 'district_head' %}{{ url_for('district_dashboard') }}{% else %}{{ url_for('state_dashboard') }}{% endif %}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% if current_user.role == 'farmer' %}{{ url_for('farmer.farmer_dashboard') }}{% elif current_user.role == 'vet' %}{{ url_for('vet.vet_dashboard') }}{% elif current_user.role == 'district_head' %}{{ url_for('district.district_dashboard') }}{% else %}{{ url_for('state.state_dashboard') }}{% endif %}">Dashboard</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-light text-dark ms-2 px-3" href="{{ url_for('signup') }}">Sign Up</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-light text-dark ms-2 px-3" href="{{ url_for('auth.signup') }}">Sign Up</a></li>
                     {% endif %}
 
                     <!-- Top Right Corner: Language Dropdown Selector (English / ಕನ್ನಡ) -->

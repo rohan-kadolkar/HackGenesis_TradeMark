@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disease Risk Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f4f7fc;
+      padding: 30px;
+      color: #333;
+    }
+
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Main Title */
+    .dashboard-title {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #1a56db;
+      margin-bottom: 24px;
+    }
+
+    .dashboard-title span {
+      color: #dc2626;
+    }
+
+    /* Filter Card */
+    .filter-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 20px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .filter-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e40af;
+      margin-bottom: 8px;
+    }
+
+    .filter-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background-color: #fff;
+      font-size: 14px;
+      color: #374151;
+      outline: none;
+    }
+
+    .filter-group select:focus {
+      border-color: #2563eb;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      background-color: #1d4ed8;
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background-color: #9ca3af;
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Status Banners */
+    .alert-banner {
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-success {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
+    .alert-warning {
+      background-color: #fefce8;
+      border: 1px solid #fef08a;
+      color: #854d0e;
+    }
+
+    /* View Mode Tabs */
+    .tab-group {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .tab-btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .tab-btn.inactive {
+      background-color: #9ca3af;
+      color: white;
+    }
+
+    /* Data Table */
+    .table-container {
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e5e7eb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f9fafb;
+      padding: 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    td {
+      padding: 16px;
+      font-size: 14px;
+      color: #374151;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    /* Risk Badges */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    .badge-very-high {
+      background-color: #dc2626;
+    }
+
+    .badge-high {
+      background-color: #ea580c;
+    }
+
+    .badge-medium {
+      background-color: #f59e0b;
+    }
+
+    .badge-low {
+      background-color: #10b981;
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+  <!-- Header Title -->
+  <h1 class="dashboard-title">Disease Risk Dashboard – <span>Risk Level Analysis</span></h1>
+
+  <!-- Top Filter Section -->
+  <div class="filter-card">
+    <div class="filter-grid">
+      <div class="filter-group">
+        <label>Select Disease:</label>
+        <select>
+          <option>Foot and mouth disease</option>
+          <option>Lumpy skin disease</option>
+          <option>Anthrax</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Select State:</label>
+        <select>
+          <option>KARNATAKA</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Select Month:</label>
+        <select>
+          <option>August</option>
+          <option>September</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary">Get Risk Data</button>
+      <button class="btn-secondary">Reset</button>
+    </div>
+  </div>
+
+  <!-- Notification / Summary Alerts -->
+  <div class="alert-banner alert-success">
+    <span>✔</span>
+    <span>Found 30 districts with data (22 Very High, 3 High, 0 Medium Risk, 0 Low Risk, 5 Very Low Risk, 0 No Risk / No Data).</span>
+  </div>
+
+  <div class="alert-banner alert-warning">
+    <span>⚠ If animals are vaccinated, please ignore the disease forecast.</span>
+  </div>
+
+  <!-- View Mode Switcher -->
+  <div class="tab-group">
+    <button class="tab-btn active">Table View</button>
+    <button class="tab-btn inactive">Map View</button>
+    <button class="tab-btn inactive">Preventive Measures</button>
+  </div>
+
+  <!-- Main Data Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>District</th>
+          <th>Risk Level</th>
+          <th>Cattle</th>
+          <th>Buffalo</th>
+          <th>Goat</th>
+          <th>Sheep</th>
+          <th>Pig</th>
+          <th>Predicted</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Bagalkote</strong></td>
+          <td><span class="badge badge-very-high">Very High Risk</span></td>
+          <td>222,823</td>
+          <td>234,340</td>
+          <td>383,926</td>
+          <td>622,856</td>
+          <td>20,458</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td><strong>Bangalore</strong></td>
+          <td><span class="badge badge-very-high">Very High Risk</span></td>
+          <td>153,861</td>
+          <td>11,168</td>
+          <td>62,464</td>
+          <td>82,873</td>
+          <td>28,046</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td><strong>Belagavi</strong></td>
+          <td><span class="badge badge-very-high">Very High Risk</span></td>
+          <td>549,540</td>
+          <td>844,171</td>
+          <td>701,741</td>
+          <td>757,679</td>
+          <td>21,784</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td><strong>Bengaluru Rural</strong></td>
+          <td><span class="badge badge-very-high">Very High Risk</span></td>
+          <td>170,722</td>
+          <td>16,924</td>
+          <td>95,156</td>
+          <td>118,788</td>
+          <td>14,131</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td><strong>Chikkaballapura</strong></td>
+          <td><span class="badge badge-very-high">Very High Risk</span></td>
+          <td>213,815</td>
+          <td>26,397</td>
+          <td>188,392</td>
+          <td>613,193</td>
+          <td>2,481</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -9,7 +9,7 @@
                 <h5 class="fw-bold text-danger"><i class="fas fa-landmark me-2"></i>State Panel</h5>
                 <hr>
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="{{ url_for('state_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a>
+                    <a class="nav-link active" href="{{ url_for('state.state_dashboard') }}"><i class="fas fa-home me-2"></i>Dashboard</a>
                     <a class="nav-link" href="#map"><i class="fas fa-map-marked-alt me-2"></i>Risk Map</a>
                     <a class="nav-link" href="#districts"><i class="fas fa-chart-bar me-2"></i>Districts</a>
                     <a class="nav-link" href="#ai-insights"><i class="fas fa-brain me-2"></i>AI Insights</a>
@@ -29,6 +29,20 @@
                 <button class="btn btn-danger" onclick="loadAIInsights()">
                     <i class="fas fa-brain me-2"></i>Generate AI Insights
                 </button>
+            </div>
+
+            <!-- Official NADRES Redirect Button -->
+            <div class="nadres-redirect-card mb-4" style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 10px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin: 0 0 8px 0; color: #111827; font-size: 18px;"><i class="fas fa-satellite-dish text-primary me-2"></i>Early Warning Intelligence</h3>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Access state-wide livestock disease forewarning maps and district risk analyses.</p>
+                </div>
+                <a href="https://nivedi.res.in/Nadres_v2/all_disease_forecast_state_wise/forecast/" target="_blank" rel="noopener noreferrer" style="background-color: #1d4ed8; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: background-color 0.2s;">
+                    <span>🌍</span> View NADRES 3.0 Dashboard
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"></path>
+                    </svg>
+                </a>
             </div>
 
             <!-- Summary Stats -->
@@ -210,7 +224,7 @@
                     <h5 class="fw-bold mb-0"><i class="fas fa-bullhorn me-2"></i>Send State-Wide Alert</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('state_send_alert') }}">
+                    <form method="POST" action="{{ url_for('state.state_send_alert') }}">
                         <div class="row">
                             <div class="col-md-3 mb-3">
                                 <label class="form-label">Alert Title</label>
