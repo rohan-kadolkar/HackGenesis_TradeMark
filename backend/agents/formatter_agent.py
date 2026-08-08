@@ -80,7 +80,19 @@ class FormatterAgent:
         return formatted_output
 
     def _extract_section(self, text, header_name):
-        pattern = rf"{header_name}:\s*(.*?)(?=\n[A-Z\s]+:|\Z)"
+        headers = [
+            "POSSIBLE CONCERN",
+            "IMMEDIATE PRECAUTIONS",
+            "ISOLATION RECOMMENDATION",
+            "FARMER ADVISORY",
+            "VETERINARY ADVISORY",
+            "GOVERNMENT REPORTING RECOMMENDATION"
+        ]
+        headers_pattern = "|".join(headers)
+        
+        # Match the target header (allowing markdown symbols before and after it)
+        # Stop capturing when the next major header is encountered
+        pattern = rf"(?:[#\*\s]*){header_name}(?:[#\*\s:]*)(.*?)(?=\n\s*[#\*]*\s*(?:{headers_pattern})\b|\Z)"
         match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
         if match:
             return match.group(1).strip()

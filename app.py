@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_login import LoginManager
 from models import db, User, get_ist
 from data import seed_database, KARNATAKA_DISTRICTS
@@ -29,7 +29,7 @@ from backend.models.notification import Notification
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # ============================================================
 # INITIALIZE AGENTIC RAG SERVICE
@@ -101,6 +101,17 @@ def root_vet_verify():
 @login_required
 def root_vet_incidents():
     return vet_incidents_endpoint()
+
+# ============================================================
+# ROOT-LEVEL STATIC FILES (sw.js, favicon)
+# ============================================================
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js', mimetype='application/javascript')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static', 'favicon.ico', mimetype='image/x-icon')
 
 # ============================================================
 # CONTEXT PROCESSORS
