@@ -8,11 +8,22 @@ from data import seed_database, KARNATAKA_DISTRICTS
 # Load environment variables from .env file
 load_dotenv()
 
+# Detect Vercel serverless environment
+IS_VERCEL = os.environ.get('VERCEL', False)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'karnataka-biosecurity-2025-default-dev-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biosecurity_karnataka.db'
+
+# Use /tmp for SQLite on Vercel (only writable directory in serverless)
+if IS_VERCEL:
+    db_path = '/tmp/biosecurity_karnataka.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biosecurity_karnataka.db'
+    app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Ensure upload directory exists
@@ -68,10 +79,11 @@ from backend.routes.state_routes import state_bp
 app.register_blueprint(state_bp)
 
 # ============================================================
-# INITIALIZE SOCKET.IO
+# INITIALIZE SOCKET.IO (skip on Vercel — no WebSocket support)
 # ============================================================
-from backend.socketio_events import init_socketio, socketio
-init_socketio(app)
+if not IS_VERCEL:
+    from backend.socketio_events import init_socketio, socketio
+    init_socketio(app)
 
 # ============================================================
 # ROOT-LEVEL API ALIASES (backward compatibility)
@@ -124,7 +136,17 @@ def inject_globals():
     }
 
 # ============================================================
-# STARTUP
+# STARTUP — Initialize DB on Vercel cold start
+# ============================================================
+if IS_VERCEL:
+    with app.app_context():
+        db.create_all()
+        from models import District
+        if District.query.first() is None:
+            seed_database()
+
+# ============================================================
+# LOCAL DEVELOPMENT
 # ============================================================
 if __name__ == '__main__':
     with app.app_context():

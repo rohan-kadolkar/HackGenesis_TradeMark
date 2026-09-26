@@ -25,3 +25,7 @@ instance/
 # Static Uploads (except structure)
 static/uploads/*
 !static/uploads/.gitkeep
+
+# ChromaDB vector store data (regenerated at runtime)
+backend/vector_store/chroma_db/
+
